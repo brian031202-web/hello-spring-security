@@ -49,6 +49,23 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    // 상품 수정 - 더티 체킹(Dirty Checking) 방식
+    // save() 없이 필드만 변경 → @Transactional 종료 시 JPA가 자동 UPDATE
+    @Transactional
+    public Product updateProduct(Long id, ProductDto dto) {
+        Product product = productRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + id));
+
+        // 영속 상태(Managed) 엔티티 필드 변경
+        product.setName(dto.getName());
+        product.setPrice(dto.getPrice());
+        product.setStock(dto.getStock());
+        if (dto.getDescription() != null) {
+            product.setDescription(dto.getDescription());
+        }
+        return product;  // save() 불필요 — 더티 체킹으로 자동 저장
+    }
+
     @Transactional
     public void deleteById(Long id) {
         productRepository.deleteById(id);
